@@ -137,7 +137,7 @@ st.sidebar.markdown("Tune the Kohonen SOM topological lattice and anomaly detect
 st.sidebar.subheader("1. Dataset Settings")
 sample_size = st.sidebar.select_slider(
     "Sample Transaction Count (N)",
-    options=[1000, 2500, 5000, 10000],
+    options=[1000, 2500, 5000],
     value=5000,
     help="Size of transactions to analyze for snappy lab demonstrations."
 )
@@ -502,15 +502,27 @@ with tab_data:
     display_cols = primary_cols + pca_cols
 
     # Format presentation
-    st.dataframe(
-        top_10[display_cols].style.format({
-            "Quantization_Error": "{:.4f}",
-            "Amount": "${:.2f}",
-            "Time": "{:.1f}",
-            **{c: "{:.3f}" for c in pca_cols}
-        }).background_gradient(subset=["Quantization_Error"], cmap="Reds"),
-        use_container_width=True
-    )
+    try:
+        st.dataframe(
+            top_10[display_cols].style.format({
+                "Quantization_Error": "{:.4f}",
+                "Amount": "${:.2f}",
+                "Time": "{:.1f}",
+                **{c: "{:.3f}" for c in pca_cols}
+            }).background_gradient(subset=["Quantization_Error"], cmap="Reds"),
+            use_container_width=True
+        )
+    except Exception:
+        st.dataframe(
+            top_10[display_cols],
+            column_config={
+                "Quantization_Error": st.column_config.NumberColumn("Quantization_Error", format="%.4f"),
+                "Amount": st.column_config.NumberColumn("Amount", format="$%.2f"),
+                "Time": st.column_config.NumberColumn("Time", format="%.1f"),
+                **{c: st.column_config.NumberColumn(c, format="%.3f") for c in pca_cols}
+            },
+            use_container_width=True
+        )
 
     st.markdown("#### Full Dataset Anomaly Breakdown Summary")
     summary_col1, summary_col2 = st.columns(2)
